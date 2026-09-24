@@ -1,0 +1,6 @@
+{
+  "appId": "com.aiquotex.scanner",
+  "appName": "AIQuotexScanner",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
