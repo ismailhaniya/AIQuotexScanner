@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">AI Quotex Scanner</string>
+
+    <string name="overlay_title">AI Scanner</string>
+
+    <string name="scan_button">SCAN QUOTEX CHART</string>
+
+    <string name="screen_capture">ENABLE SCREEN CAPTURE</string>
+
+    <string name="floating_overlay">ENABLE FLOATING SCANNER</string>
+
+</resources>
