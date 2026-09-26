@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIQuotexScanner V16</title>
+
+  <meta name="theme-color" content="#0B1220">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <header>
+    <h1>🤖 AIQuotexScanner</h1>
+    <p>Live Quotex Screen Scanner • Overlay Analysis</p>
+  </header>
+
+  <section class="status-card">
+    <h3>Scanner Status</h3>
+    <div id="status">READY</div>
+    <div id="overlayStatus">Overlay : DISCONNECTED</div>
+  </section>
+
+  <section class="market-card">
+    <h3>Select Market</h3>
+
+    <select id="market">
+      <option value="EUR/USD">EUR/USD</option>
+      <option value="GBP/USD">GBP/USD</option>
+      <option value="USD/JPY">USD/JPY</option>
+      <option value="AUD/USD">AUD/USD</option>
+      <option value="USD/CAD">USD/CAD</option>
+      <option value="EUR/JPY">EUR/JPY</option>
+    </select>
+
+    <button id="scanButton" onclick="startScan()">
+      🚀 START SCREEN SCAN
+    </button>
+  </section>
+
+  <section class="signal-card">
+    <h2 id="signal">WAIT</h2>
+    <p id="confidence">Waiting for Analysis...</p>
+
+    <div class="timer-box">
+      <span>Analysis Timer</span>
+      <strong id="timer">03:00</strong>
+    </div>
+
+    <div class="timer-box">
+      <span>Next Candle</span>
+      <strong id="nextCandleTimer">60 sec</strong>
+    </div>
+  </section>
+
+  <section class="analysis-card">
+    <h3>Live Technical Analysis</h3>
+
+    <div class="grid">
+      <div class="box">
+        <span>RSI</span>
+        <strong id="rsiValue">--</strong>
+      </div>
+
+      <div class="box">
+        <span>EMA 9</span>
+        <strong id="ema9Value">--</strong>
+      </div>
+
+      <div class="box">
+        <span>EMA 21</span>
+        <strong id="ema21Value">--</strong>
+      </div>
+
+      <div class="box">
+        <span>Momentum</span>
+        <strong id="momentumValue">--</strong>
+      </div>
+
+      <div class="box">
+        <span>Trend</span>
+        <strong id="trendValue">--</strong>
+      </div>
+
+      <div class="box">
+        <span>Pattern</span>
+        <strong id="patternValue">--</strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="scanner-card">
+    <h3>Quotex Screen Scanner</h3>
+
+    <div class="scanner-row">
+      <span>Screen Capture</span>
+      <strong id="captureStatus">Waiting Permission</strong>
+    </div>
+
+    <div class="scanner-row">
+      <span>Chart Detection</span>
+      <strong id="chartStatus">Not Detected</strong>
+    </div>
+
+    <div class="scanner-row">
+      <span>Candle Detection</span>
+      <strong id="candleStatus">0 Candle</strong>
+    </div>
+
+    <div class="scanner-row">
+      <span>Scanner Engine</span>
+      <strong id="engineStatus">Offline</strong>
+    </div>
+  </section>
+
+  <section class="history-card">
+    <h3>Last Signals</h3>
+    <div id="signalHistory"></div>
+  </section>
+
+  <footer>
+    <p>AIQuotexScanner V16 • Android Overlay Ready</p>
+  </footer>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
