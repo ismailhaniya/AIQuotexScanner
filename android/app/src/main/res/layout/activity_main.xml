@@ -13,86 +13,61 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🤖 AIQuotexScanner V16"
+            android:text="AIQuotexScanner V16"
             android:textColor="#00E676"
             android:textSize="26sp"
             android:textStyle="bold"/>
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Live Quotex Screen Scanner"
-            android:textColor="#B0BEC5"
-            android:textSize="15sp"
-            android:layout_marginBottom="20dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Scanner Status"
-            android:textColor="#FFFFFF"/>
-
-        <TextView
             android:id="@+id/statusText"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="READY"
-            android:textColor="#00E676"
-            android:textSize="18sp"
-            android:padding="12dp"/>
+            android:text="Status: READY"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="12dp"/>
 
         <Button
             android:id="@+id/startButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="START SCANNER"
-            android:backgroundTint="#00C853"
-            android:textColor="#FFFFFF"/>
+            android:text="START LIVE SCAN"
+            android:layout_marginTop="20dp"/>
 
         <Button
             android:id="@+id/stopButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="STOP SCANNER"
-            android:layout_marginTop="10dp"
-            android:backgroundTint="#D32F2F"
-            android:textColor="#FFFFFF"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Live Signal"
-            android:textColor="#FFFFFF"
-            android:layout_marginTop="20dp"/>
+            android:text="STOP SCAN"
+            android:layout_marginTop="12dp"/>
 
         <TextView
             android:id="@+id/signalText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="WAIT"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            android:textColor="#FFD54F"
             android:gravity="center"
-            android:padding="16dp"/>
+            android:textColor="#FFD54F"
+            android:textSize="34sp"
+            android:textStyle="bold"
+            android:padding="24dp"/>
 
         <TextView
             android:id="@+id/confidenceText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Confidence: --%"
+            android:text="Confidence: 0%"
             android:textColor="#FFFFFF"
             android:gravity="center"/>
 
         <TextView
-            android:id="@+id/trendText"
+            android:id="@+id/timerText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Trend: --"
-            android:textColor="#FFFFFF"
+            android:text="Timer: 180s"
+            android:textColor="#00E676"
+            android:textSize="18sp"
             android:gravity="center"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="16dp"/>
 
     </LinearLayout>
-
 </ScrollView>
