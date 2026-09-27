@@ -1,6 +1,5 @@
 package com.aiquotex.scanner
 
-import android.graphics.Bitmap
 import kotlin.random.Random
 
 data class ScanResult(
@@ -8,56 +7,39 @@ data class ScanResult(
     val confidence: Int,
     val trend: String,
     val rsi: Int,
-    val momentum: Int
+    val timer: Int
 )
 
 object ScreenAnalyzer {
 
-    fun analyze(bitmap: Bitmap): ScanResult {
+    private var countdown = 180
 
-        // V16 Base Engine (placeholder analysis structure)
+    fun analyze(): ScanResult {
 
-        val brightness = calculateBrightness(bitmap)
+        val confidence = Random.nextInt(75, 96)
+        val rsi = Random.nextInt(25, 76)
 
-        val trend = when {
-            brightness > 160 -> "BULLISH"
-            brightness < 90 -> "BEARISH"
-            else -> "SIDEWAYS"
-        }
-
-        val signal = when (trend) {
-            "BULLISH" -> "UP"
-            "BEARISH" -> "DOWN"
+        val signal = when {
+            rsi >= 60 -> "UP"
+            rsi <= 40 -> "DOWN"
             else -> "WAIT"
         }
 
-        return ScanResult(
-            signal = signal,
-            confidence = Random.nextInt(72, 95),
-            trend = trend,
-            rsi = Random.nextInt(30, 70),
-            momentum = Random.nextInt(-100, 100)
-        )
-    }
-
-    private fun calculateBrightness(bitmap: Bitmap): Int {
-        var total = 0L
-        var count = 0
-
-        val stepX = maxOf(bitmap.width / 30, 1)
-        val stepY = maxOf(bitmap.height / 30, 1)
-
-        for (x in 0 until bitmap.width step stepX) {
-            for (y in 0 until bitmap.height step stepY) {
-                val pixel = bitmap.getPixel(x, y)
-                val r = pixel shr 16 and 0xff
-                val g = pixel shr 8 and 0xff
-                val b = pixel and 0xff
-                total += (r + g + b) / 3
-                count++
-            }
+        val trend = when (signal) {
+            "UP" -> "BULLISH"
+            "DOWN" -> "BEARISH"
+            else -> "SIDEWAYS"
         }
 
-        return if (count == 0) 128 else (total / count).toInt()
+        if (countdown > 0) countdown--
+        else countdown = 180
+
+        return ScanResult(
+            signal = signal,
+            confidence = confidence,
+            trend = trend,
+            rsi = rsi,
+            timer = countdown
+        )
     }
 }
