@@ -6,6 +6,8 @@ import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
 import android.view.Gravity
+import android.view.MotionEvent
+import android.view.View
 import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -22,31 +24,31 @@ class OverlayService : Service() {
 
         overlayView = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(24, 24, 24, 24)
+            setPadding(20,20,20,20)
             setBackgroundColor(0xCC111827.toInt())
         }
 
         val title = TextView(this).apply {
-            text = "🤖 AIQuotexScanner"
-            textSize = 18f
+            text = "AIQuotexScanner"
+            textSize = 16f
             setTextColor(0xFF00E676.toInt())
         }
 
         val signal = TextView(this).apply {
-            text = "Signal : WAIT"
-            textSize = 16f
-            setTextColor(0xFFFFFFFF.toInt())
+            text = "WAIT"
+            textSize = 28f
+            setTextColor(0xFFFFD54F.toInt())
         }
 
-        val confidence = TextView(this).apply {
-            text = "Confidence : 0%"
+        val timer = TextView(this).apply {
+            text = "180s"
             textSize = 14f
-            setTextColor(0xFFFFD54F.toInt())
+            setTextColor(0xFFFFFFFF.toInt())
         }
 
         overlayView.addView(title)
         overlayView.addView(signal)
-        overlayView.addView(confidence)
+        overlayView.addView(timer)
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -60,8 +62,34 @@ class OverlayService : Service() {
         )
 
         params.gravity = Gravity.TOP or Gravity.START
-        params.x = 20
+        params.x = 30
         params.y = 150
+
+        overlayView.setOnTouchListener(object : View.OnTouchListener {
+            var startX = 0
+            var startY = 0
+            var touchX = 0f
+            var touchY = 0f
+
+            override fun onTouch(v: View?, event: MotionEvent): Boolean {
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        startX = params.x
+                        startY = params.y
+                        touchX = event.rawX
+                        touchY = event.rawY
+                        return true
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        params.x = startX + (event.rawX - touchX).toInt()
+                        params.y = startY + (event.rawY - touchY).toInt()
+                        windowManager.updateViewLayout(overlayView, params)
+                        return true
+                    }
+                }
+                return false
+            }
+        })
 
         windowManager.addView(overlayView, params)
     }
