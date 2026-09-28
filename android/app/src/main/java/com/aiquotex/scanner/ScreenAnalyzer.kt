@@ -1,45 +1,56 @@
 package com.aiquotex.scanner
 
-import kotlin.random.Random
+import android.graphics.Bitmap
+import android.graphics.Color
 
 data class ScanResult(
-    val signal: String,
+    val chartDetected: Boolean,
     val confidence: Int,
-    val trend: String,
-    val rsi: Int,
-    val timer: Int
+    val trend: String
 )
 
 object ScreenAnalyzer {
 
-    private var countdown = 180
+    fun analyzeFrame(bitmap: Bitmap): ScanResult {
 
-    fun analyze(): ScanResult {
+        val width = bitmap.width
+        val height = bitmap.height
 
-        val confidence = Random.nextInt(75, 96)
-        val rsi = Random.nextInt(25, 76)
+        var greenPixels = 0
+        var redPixels = 0
 
-        val signal = when {
-            rsi >= 60 -> "UP"
-            rsi <= 40 -> "DOWN"
-            else -> "WAIT"
+        // স্ক্রিনের মাঝের অংশ স্ক্যান
+        for (x in width / 4 until (width * 3) / 4 step 8) {
+            for (y in height / 4 until (height * 3) / 4 step 8) {
+
+                val pixel = bitmap.getPixel(x, y)
+
+                val r = Color.red(pixel)
+                val g = Color.green(pixel)
+
+                if (g > r + 30) greenPixels++
+                if (r > g + 30) redPixels++
+            }
         }
 
-        val trend = when (signal) {
-            "UP" -> "BULLISH"
-            "DOWN" -> "BEARISH"
-            else -> "SIDEWAYS"
+        val total = greenPixels + redPixels
+
+        if (total < 20) {
+            return ScanResult(
+                chartDetected = false,
+                confidence = 0,
+                trend = "NO_CHART"
+            )
         }
 
-        if (countdown > 0) countdown--
-        else countdown = 180
+        val trend = if (greenPixels > redPixels) "BULLISH" else "BEARISH"
+        val confidence =
+            (maxOf(greenPixels, redPixels) * 100 / total).coerceAtMost(95)
 
         return ScanResult(
-            signal = signal,
+            chartDetected = true,
             confidence = confidence,
-            trend = trend,
-            rsi = rsi,
-            timer = countdown
+            trend = trend
         )
     }
 }
