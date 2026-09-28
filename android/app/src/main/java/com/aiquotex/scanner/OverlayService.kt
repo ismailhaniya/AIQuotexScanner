@@ -1,13 +1,14 @@
 package com.aiquotex.scanner
 
 import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
 import android.view.Gravity
-import android.view.MotionEvent
-import android.view.View
 import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -16,6 +17,20 @@ class OverlayService : Service() {
 
     private lateinit var windowManager: WindowManager
     private lateinit var overlayView: LinearLayout
+
+    private lateinit var signalText: TextView
+    private lateinit var infoText: TextView
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val signal = intent?.getStringExtra("signal") ?: "WAIT"
+            val confidence = intent?.getIntExtra("confidence", 0) ?: 0
+            val timer = intent?.getIntExtra("timer", 180) ?: 180
+
+            signalText.text = signal
+            infoText.text = "Confidence: ${confidence}% | ${timer}s"
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -28,27 +43,20 @@ class OverlayService : Service() {
             setBackgroundColor(0xCC111827.toInt())
         }
 
-        val title = TextView(this).apply {
-            text = "AIQuotexScanner"
-            textSize = 16f
-            setTextColor(0xFF00E676.toInt())
-        }
-
-        val signal = TextView(this).apply {
+        signalText = TextView(this).apply {
             text = "WAIT"
             textSize = 28f
             setTextColor(0xFFFFD54F.toInt())
         }
 
-        val timer = TextView(this).apply {
-            text = "180s"
+        infoText = TextView(this).apply {
+            text = "Confidence: 0% | 180s"
             textSize = 14f
             setTextColor(0xFFFFFFFF.toInt())
         }
 
-        overlayView.addView(title)
-        overlayView.addView(signal)
-        overlayView.addView(timer)
+        overlayView.addView(signalText)
+        overlayView.addView(infoText)
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -65,38 +73,15 @@ class OverlayService : Service() {
         params.x = 30
         params.y = 150
 
-        overlayView.setOnTouchListener(object : View.OnTouchListener {
-            var startX = 0
-            var startY = 0
-            var touchX = 0f
-            var touchY = 0f
-
-            override fun onTouch(v: View?, event: MotionEvent): Boolean {
-                when (event.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        startX = params.x
-                        startY = params.y
-                        touchX = event.rawX
-                        touchY = event.rawY
-                        return true
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        params.x = startX + (event.rawX - touchX).toInt()
-                        params.y = startY + (event.rawY - touchY).toInt()
-                        windowManager.updateViewLayout(overlayView, params)
-                        return true
-                    }
-                }
-                return false
-            }
-        })
-
         windowManager.addView(overlayView, params)
+
+        registerReceiver(receiver, IntentFilter("AI_SIGNAL_UPDATE"))
     }
 
     override fun onDestroy() {
-        super.onDestroy()
+        unregisterReceiver(receiver)
         windowManager.removeView(overlayView)
+        super.onDestroy()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
