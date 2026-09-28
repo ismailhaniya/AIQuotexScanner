@@ -5,23 +5,35 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
-import android.media.projection.MediaProjectionManager
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 
 class ScreenCaptureService : Service() {
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    private val handler = Handler(Looper.getMainLooper())
 
-        createNotification()
+    private val scannerLoop = object : Runnable {
+        override fun run() {
+            val result = ScreenAnalyzer.analyze()
 
-        val resultCode = intent?.getIntExtra("resultCode", -1) ?: -1
-        val data = intent?.getParcelableExtra<Intent>("data")
+            // পরের ধাপে OverlayService এই ডাটা ব্যবহার করবে
+            val intent = Intent("AI_SIGNAL_UPDATE")
+            intent.putExtra("signal", result.signal)
+            intent.putExtra("confidence", result.confidence)
+            intent.putExtra("trend", result.trend)
+            intent.putExtra("rsi", result.rsi)
+            intent.putExtra("timer", result.timer)
+            sendBroadcast(intent)
 
-        if (resultCode != -1 && data != null) {
-            // এখানে পরের ধাপে Live Screen Analyzer যুক্ত করবো
+            handler.postDelayed(this, 1000)
         }
+    }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        createNotification()
+        handler.post(scannerLoop)
         return START_STICKY
     }
 
@@ -45,6 +57,11 @@ class ScreenCaptureService : Service() {
             .build()
 
         startForeground(1, notification)
+    }
+
+    override fun onDestroy() {
+        handler.removeCallbacks(scannerLoop)
+        super.onDestroy()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
