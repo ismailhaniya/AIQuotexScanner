@@ -1,58 +1,94 @@
 package com.aiquotex.scanner
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.Service
+import android.app.*
 import android.content.Intent
-import android.os.Build
-import android.os.Handler
-import android.os.IBinder
-import android.os.Looper
+import android.hardware.display.DisplayManager
+import android.hardware.display.VirtualDisplay
+import android.media.ImageReader
+import android.media.projection.MediaProjection
+import android.media.projection.MediaProjectionManager
+import android.os.*
+import android.util.DisplayMetrics
+import android.view.WindowManager
 
 class ScreenCaptureService : Service() {
 
-    private val handler = Handler(Looper.getMainLooper())
-
-    private val scannerLoop = object : Runnable {
-        override fun run() {
-            val result = ScreenAnalyzer.analyze()
-
-            // পরের ধাপে OverlayService এই ডাটা ব্যবহার করবে
-            val intent = Intent("AI_SIGNAL_UPDATE")
-            intent.putExtra("signal", result.signal)
-            intent.putExtra("confidence", result.confidence)
-            intent.putExtra("trend", result.trend)
-            intent.putExtra("rsi", result.rsi)
-            intent.putExtra("timer", result.timer)
-            sendBroadcast(intent)
-
-            handler.postDelayed(this, 1000)
-        }
-    }
+    private var mediaProjection: MediaProjection? = null
+    private var virtualDisplay: VirtualDisplay? = null
+    private var imageReader: ImageReader? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
         createNotification()
-        handler.post(scannerLoop)
+
+        val resultCode = intent?.getIntExtra("resultCode", -1) ?: -1
+        val data = intent?.getParcelableExtra<Intent>("data")
+
+        if (resultCode != -1 && data != null) {
+            startCapture(resultCode, data)
+        }
+
         return START_STICKY
     }
 
+    private fun startCapture(resultCode: Int, data: Intent) {
+
+        val projectionManager =
+            getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+
+        mediaProjection = projectionManager.getMediaProjection(resultCode, data)
+
+        val metrics = DisplayMetrics()
+        val wm = getSystemService(WINDOW_SERVICE) as WindowManager
+        wm.defaultDisplay.getRealMetrics(metrics)
+
+        imageReader = ImageReader.newInstance(
+            metrics.widthPixels,
+            metrics.heightPixels,
+            android.graphics.PixelFormat.RGBA_8888,
+            2
+        )
+
+        virtualDisplay = mediaProjection?.createVirtualDisplay(
+            "QuotexCapture",
+            metrics.widthPixels,
+            metrics.heightPixels,
+            metrics.densityDpi,
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+            imageReader!!.surface,
+            null,
+            null
+        )
+
+        imageReader?.setOnImageAvailableListener({ reader ->
+            val image = reader.acquireLatestImage() ?: return@setOnImageAvailableListener
+
+            // V17 Phase-2 এ এখান থেকে Bitmap ScreenAnalyzer-এ যাবে
+
+            image.close()
+
+        }, Handler(Looper.getMainLooper()))
+    }
+
     private fun createNotification() {
+
         val channelId = "scanner_channel"
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
             val channel = NotificationChannel(
                 channelId,
                 "AIQuotexScanner",
                 NotificationManager.IMPORTANCE_LOW
             )
+
             getSystemService(NotificationManager::class.java)
                 .createNotificationChannel(channel)
         }
 
         val notification = Notification.Builder(this, channelId)
             .setContentTitle("AIQuotexScanner")
-            .setContentText("Live Scanner Running")
+            .setContentText("Live Screen Scanner Running")
             .setSmallIcon(android.R.drawable.ic_menu_camera)
             .build()
 
@@ -60,7 +96,9 @@ class ScreenCaptureService : Service() {
     }
 
     override fun onDestroy() {
-        handler.removeCallbacks(scannerLoop)
+        virtualDisplay?.release()
+        imageReader?.close()
+        mediaProjection?.stop()
         super.onDestroy()
     }
 
